@@ -1,0 +1,20 @@
+include(cmake/CPM.cmake)
+
+# setup dependencies
+#
+# Done as a function so that updates to variables like CMAKE_CXX_FLAGS don't propagate out to other targets
+function(arquebus_setup_dependencies)
+
+  # For each dependency, see if it's already been provided to us by a parent project
+
+  if(NOT TARGET fmtlib::fmtlib)
+    cpmaddpackage("gh:fmtlib/fmt#11.1.4")
+  endif()
+
+  # if(NOT TARGET Catch2::Catch2WithMain) cpmaddpackage("gh:catchorg/Catch2@3.8.0") endif()
+  #
+  # if(NOT TARGET async) cpmaddpackage("gh:intel/cpp-baremetal-senders-and-receivers#6acab81") endif()
+  #
+  # if(NOT TARGET stdx) cpmaddpackage("gh:intel/cpp-std-extensions#d4ba91e") endif()
+
+endfunction()

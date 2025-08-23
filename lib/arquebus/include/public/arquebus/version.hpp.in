@@ -1,0 +1,13 @@
+#pragma once
+
+#include <string_view>
+
+namespace arquebus {
+  // Version number and the commit hash details from built library
+  struct version_details
+  {
+    std::string_view version{ "@PROJECT_VERSION@" };
+    std::string_view commit_hash{ "@GIT_HASH@" };
+    std::string_view commit_short_hash{ "@GIT_HASH_SHORT@" };
+  };
+}  // namespace arquebus

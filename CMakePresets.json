@@ -1,0 +1,98 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "conf-common",
+      "description": "Unix-like OS settings for gcc and clang toolchains",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/_out/build/${presetName}",
+      "installDir": "${sourceDir}/_out/install/${presetName}",
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Linux",
+          "Darwin"
+        ]
+      }
+    },
+    {
+      "name": "gcc-debug-static",
+      "description": "Target Unix-like OS with the gcc compiler, debug build type, static libraries",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "gcc-release-static",
+      "description": "Target Unix-like OS with the gcc compiler, release build type, static libraries",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "clang-debug-static",
+      "description": "Target Unix-like OS with the clang compiler, debug build type, static libraries",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "clang-release-static",
+      "description": "Target Unix-like OS with the clang compiler, release build type, static libraries",
+      "inherits": "conf-common",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "gcc-debug-shared",
+      "description": "Target Unix-like OS with the gcc compiler, debug build type, shared libraries",
+      "inherits": "gcc-debug-static",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "gcc-release-shared",
+      "description": "Target Unix-like OS with the gcc compiler, release build type, shared libraries",
+      "inherits": "gcc-release-static",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "clang-debug-shared",
+      "description": "Target Unix-like OS with the clang compiler, debug build type, shared libraries",
+      "inherits": "clang-debug-static",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    },
+    {
+      "name": "clang-release-shared",
+      "description": "Target Unix-like OS with the clang compiler, release build type, shared libraries",
+      "inherits": "clang-release-static",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON"
+      }
+    }
+  ]
+}
