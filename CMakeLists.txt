@@ -35,7 +35,7 @@ add_library(arquebus::arquebus_options ALIAS arquebus_options)
 add_library(arquebus::arquebus_warnings ALIAS arquebus_warnings)
 
 add_subdirectory(lib)
-# add_subdirectory(src)
+add_subdirectory(src)
 
 # include(cmake/TestSetupHelpers.cmake) add_subdirectory(test)
 

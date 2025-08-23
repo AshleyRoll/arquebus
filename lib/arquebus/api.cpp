@@ -1,1 +1,8 @@
-int foo() { return 1; }
+
+#include <arquebus/arquebus.hpp>
+
+namespace arquebus {
+
+  auto foo() -> int { return 1; }
+
+}
