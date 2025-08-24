@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "private/shared_memory.hpp"
+#include "arquebus/shared_memory.hpp"
 
 #include <array>
 #include <filesystem>

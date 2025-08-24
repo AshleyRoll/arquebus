@@ -1,4 +1,4 @@
-#include "shared_memory.hpp"
+#include "include/public/arquebus/shared_memory.hpp"
 
 #include "util/fd_handle.hpp"
 

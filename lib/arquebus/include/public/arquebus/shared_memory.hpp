@@ -53,10 +53,9 @@ namespace arquebus {
 
 
   template<typename T>
+    requires std::is_trivially_copyable_v<T>
   class shared_memory_owner
   {
-    static_assert(std::is_trivially_copyable_v<T>);
-
   public:
     explicit shared_memory_owner(std::string_view name)
       : m_sharedMemory{ name, sizeof(T) }
@@ -94,9 +93,9 @@ namespace arquebus {
 
 
   template<typename T>
+    requires std::is_trivially_copyable_v<T>
   class shared_memory_user
   {
-    static_assert(std::is_trivially_copyable_v<T>);
 
   public:
     explicit shared_memory_user(std::string_view name)

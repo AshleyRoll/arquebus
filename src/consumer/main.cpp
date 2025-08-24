@@ -5,5 +5,8 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
 {
   fmt::println("starting consumer...");
 
-  return arquebus::foo();
+  auto ver = arquebus::version();
+  fmt::println("arquebus version: {} #{}", ver.version_string, ver.commit_short_hash);
+
+  return 0;
 }

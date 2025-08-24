@@ -5,6 +5,8 @@
 auto main(int /*argc*/, char const * /*argv*/[]) -> int
 {
   fmt::println("starting producer...");
+  auto ver = arquebus::version();
+  fmt::println("arquebus version: {} #{}", ver.version_string, ver.commit_short_hash);
 
-  return arquebus::foo();
+  return 0;
 }

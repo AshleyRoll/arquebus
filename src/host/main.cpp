@@ -3,7 +3,25 @@
 
 auto main(int /*argc*/, char const * /*argv*/[]) -> int
 {
-  fmt::println("starting host...");
+  static constexpr auto Bits = 23;
+  static constexpr auto Size = (1 << Bits);
+  static_assert(Size == 0x800000);
 
-  return arquebus::foo();
+  fmt::println("starting host...");
+  auto ver = arquebus::version();
+  fmt::println("arquebus version: {} #{}", ver.version_string, ver.commit_short_hash);
+
+  fmt::println("creating queue...");
+  auto queue = arquebus::make_varariable_length_message_spsc_queue_host<23>("spsc1");
+  fmt::println("initialising queue...");
+  queue.initialise();
+
+  fmt::println("..done");
+  fmt::println("Press Enter to quit");
+
+  getchar();
+
+  fmt::println("Exiting");
+
+  return 0;
 }

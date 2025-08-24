@@ -1,6 +1,6 @@
 include(GenerateExportHeader)
 
-set(ARQUEBUS_LIB_SOURCE_FILES api.cpp shared_memory.cpp)
+set(ARQUEBUS_LIB_SOURCE_FILES arquebus.cpp shared_memory.cpp)
 
 add_library(arquebus ${ARQUEBUS_LIB_SOURCE_FILES})
 
