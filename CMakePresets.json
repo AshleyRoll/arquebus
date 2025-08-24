@@ -27,7 +27,6 @@
       "description": "Target Unix-like OS with the gcc compiler, debug build type, static libraries",
       "inherits": "conf-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -37,7 +36,6 @@
       "description": "Target Unix-like OS with the gcc compiler, release build type, static libraries",
       "inherits": "conf-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
@@ -47,7 +45,6 @@
       "description": "Target Unix-like OS with the clang compiler, debug build type, static libraries",
       "inherits": "conf-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -57,7 +54,6 @@
       "description": "Target Unix-like OS with the clang compiler, release build type, static libraries",
       "inherits": "conf-common",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }

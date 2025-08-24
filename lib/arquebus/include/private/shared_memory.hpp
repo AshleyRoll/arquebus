@@ -31,7 +31,7 @@ namespace arquebus {
 
       // attempt to open and map the shared memory segment
       // return true on success, false if the segment does not yet exist.
-      auto try_open() -> bool;
+      auto attach() -> bool;
 
       // attempt to create or open the shared memory segment as the owner
       // if the segment was created, true is returned, if the segment already exists,
@@ -69,15 +69,17 @@ namespace arquebus {
     shared_memory_owner(shared_memory_owner const &) = delete;
     auto operator=(shared_memory_owner const &) -> shared_memory_owner & = delete;
 
-    void create()
+    auto create() -> bool
     {
       if (!m_sharedMemory.create()) {
-        throw std::runtime_error("Failed to create shared memory segment");
+        return false;
       }
 
       // construct the T in place
       // NOLINTNEXTLINE(*-owning-memory)
       m_mapping = new (m_sharedMemory.mapping()) T;
+
+      return true;
     }
 
     [[nodiscard]] auto name() const -> std::string const & { return m_sharedMemory.name(); }
@@ -110,7 +112,7 @@ namespace arquebus {
 
     auto attach() -> bool
     {
-      if (!m_sharedMemory.try_open()) {
+      if (!m_sharedMemory.attach()) {
         return false;
       }
 

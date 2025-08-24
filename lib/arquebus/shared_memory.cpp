@@ -41,7 +41,7 @@ namespace arquebus::impl {
 
   shared_memory::~shared_memory() { close(); }
 
-  auto shared_memory::try_open() -> bool
+  auto shared_memory::attach() -> bool
   {
     if(m_mapping != nullptr) {
       throw std::logic_error("Shared memory segment already exists");

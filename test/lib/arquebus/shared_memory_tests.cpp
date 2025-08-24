@@ -2,12 +2,12 @@
 
 #include "private/shared_memory.hpp"
 
+#include <array>
 #include <filesystem>
 
-struct TestMemory
+struct test_memory
 {
-  int data[100];
-
+  std::array<int, 100> data;
 };
 
 
@@ -15,7 +15,7 @@ TEST_CASE("shared_memory_owner can create and clean up", "[arquebus]")
 {
   using namespace arquebus;
 
-  shared_memory_owner<TestMemory> owner{"test1"};
+  shared_memory_owner<test_memory> owner{"test1"};
 
   CHECK(not std::filesystem::exists("/dev/shm" + owner.name()));
 
@@ -30,14 +30,13 @@ TEST_CASE("shared_memory_owner can create and clean up", "[arquebus]")
   owner.close();
 
   CHECK(not std::filesystem::exists("/dev/shm" + owner.name()));
-
 }
 
 TEST_CASE("shared_memory_user fails open when owner not created", "[arquebus]")
 {
   using namespace arquebus;
 
-  shared_memory_user<TestMemory> user{"test2"};
+  shared_memory_user<test_memory> user{"test2"};
 
   REQUIRE_NOTHROW( user.attach() == false );
 }
@@ -46,8 +45,8 @@ TEST_CASE("can map same data between owner and user", "[arquebus]")
 {
   using namespace arquebus;
 
-  shared_memory_owner<TestMemory> owner{"test2"};
-  shared_memory_user<TestMemory> user{"test2"};
+  shared_memory_owner<test_memory> owner{"test3"};
+  shared_memory_user<test_memory> user{"test3"};
 
   REQUIRE_NOTHROW(owner.create());
   REQUIRE_NOTHROW(user.attach());
@@ -62,5 +61,16 @@ TEST_CASE("can map same data between owner and user", "[arquebus]")
 
   o->data[0] = 1;
   CHECK(u->data[0] == 1);
+}
+
+TEST_CASE("can not create shared memory if it exists", "[arquebus]")
+{
+  using namespace arquebus;
+
+  shared_memory_owner<test_memory> owner1{"test4"};
+  shared_memory_owner<test_memory> owner2{"test4"};
+
+  REQUIRE_NOTHROW(owner1.create());
+  REQUIRE_NOTHROW(not owner2.create());
 
 }
