@@ -1,9 +1,9 @@
 # Create a Catch2 test with the provided TEST_SOURCES. The target will be ${TARGET_PREFIX}_tests and will privately link
-# LINK_LIBRARIES
+# LINK_LIBRARIES private header path PRIVATE_HEADER_PATH will be added to allow testing of private headers
 function(arquebus_catch2_test_setup)
   set(options)
   set(oneValueArgs TARGET_PREFIX)
-  set(multiValueArgs TEST_SOURCES LINK_LIBRARIES)
+  set(multiValueArgs TEST_SOURCES LINK_LIBRARIES PRIVATE_HEADER_PATH)
   cmake_parse_arguments(PARSE_ARGV 0 ARG "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
   if("${ARG_TARGET_PREFIX}" STREQUAL "")
@@ -18,6 +18,12 @@ function(arquebus_catch2_test_setup)
 
   add_executable(${tests_target} ${ARG_TEST_SOURCES})
   target_link_libraries(${tests_target} PRIVATE ${ARG_LINK_LIBRARIES} Catch2::Catch2WithMain)
+
+  if(NOT "${ARG_PRIVATE_HEADER_PATH}" STREQUAL "")
+    target_include_directories(
+      ${tests_target} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}${ARG_PRIVATE_HEADER_PATH}>
+    )
+  endif()
 
   if(TARGET ${tests_target})
     catch_discover_tests(
@@ -38,11 +44,11 @@ endfunction()
 
 # Create a Catch2 test with the provided CONSTEXPR_SOURCES. This will create two targets -
 # ${TARGET_PREFIX}_constexpr_tests that runs at compile time - ${TARGET_PREFIX}_relaxed_constexpr_tests disables compile
-# to to assist with debugging constexpr tests LINK_LIBRARIES will be privately linked CONSTEXPR_PRIVATE_HEADER_PATH will
-# be added to allow constexpr testing of private headers
+# to to assist with debugging constexpr tests LINK_LIBRARIES will be privately linked PRIVATE_HEADER_PATH will be added
+# to allow constexpr testing of private headers
 function(arquebus_catch2_constexpr_test_setup)
   set(options)
-  set(oneValueArgs TARGET_PREFIX CONSTEXPR_PRIVATE_HEADER_PATH)
+  set(oneValueArgs TARGET_PREFIX PRIVATE_HEADER_PATH)
   set(multiValueArgs CONSTEXPR_SOURCES LINK_LIBRARIES)
   cmake_parse_arguments(PARSE_ARGV 0 ARG "${options}" "${oneValueArgs}" "${multiValueArgs}")
 
@@ -61,9 +67,9 @@ function(arquebus_catch2_constexpr_test_setup)
 
   target_link_libraries(${constexpr_target} PRIVATE ${ARG_LINK_LIBRARIES} Catch2::Catch2WithMain)
 
-  if(NOT "${ARG_CONSTEXPR_PRIVATE_HEADER_PATH}" STREQUAL "")
+  if(NOT "${ARG_PRIVATE_HEADER_PATH}" STREQUAL "")
     target_include_directories(
-      ${constexpr_target} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}${ARG_CONSTEXPR_PRIVATE_HEADER_PATH}>
+      ${constexpr_target} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}${ARG_PRIVATE_HEADER_PATH}>
     )
   endif()
 
@@ -75,9 +81,9 @@ function(arquebus_catch2_constexpr_test_setup)
 
   target_compile_definitions(${relaxed_constexpr_target} PRIVATE -DCATCH_CONFIG_RUNTIME_STATIC_REQUIRE)
 
-  if(NOT "${ARG_CONSTEXPR_PRIVATE_HEADER_PATH}" STREQUAL "")
+  if(NOT "${ARG_PRIVATE_HEADER_PATH}" STREQUAL "")
     target_include_directories(
-      ${relaxed_constexpr_target} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}${ARG_CONSTEXPR_PRIVATE_HEADER_PATH}>
+      ${relaxed_constexpr_target} PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}${ARG_PRIVATE_HEADER_PATH}>
     )
   endif()
 

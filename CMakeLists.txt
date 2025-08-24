@@ -23,8 +23,10 @@ arquebus_setup_dependencies()
 
 arquebus_local_options()
 
-# need to add Catch2 extras folder to module path so we can include(Catch) list(APPEND CMAKE_MODULE_PATH
-# ${Catch2_SOURCE_DIR}/extras) include(CTest) include(Catch)
+# need to add Catch2 extras folder to module path so we can include(Catch)
+list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
+include(CTest)
+include(Catch)
 
 # don't know if this should be set globally from here or not...
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -37,7 +39,9 @@ add_library(arquebus::arquebus_warnings ALIAS arquebus_warnings)
 add_subdirectory(lib)
 add_subdirectory(src)
 
-# include(cmake/TestSetupHelpers.cmake) add_subdirectory(test)
+include(cmake/TestSetupHelpers.cmake)
+
+add_subdirectory(test)
 
 # create a custom target to copy the compile_commands.json from the build into the root level for external tools using
 # clangd

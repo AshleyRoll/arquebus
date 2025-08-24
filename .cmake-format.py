@@ -5,49 +5,21 @@ with section("parse"):
 
   # Specify structure for custom cmake functions
   additional_commands = {
-      'elements_series_make_firmware_target': {
-          'flags': [],
-          'kwargs': {
-              'TARGET_NAME': 1,
-              'BOOTLOADER_TARGET': 1,
-              'VERSION_MAJOR': 1,
-              'VERSION_MINOR': 1,
-              'DEFINES': '*',
-              'COMPILE_OPTIONS': '*',
-              'LINK_OPTIONS': '*',
-              'INCLUDE_DIRS': '*',
-              'LINK_DIRS': '*',
-              'SOURCE_FILES': '*',
-              'LINK_LIBRARIES': '*',
-          }
-      },
-      'elements_series_make_bootloader_target': {
-          'flags': [],
-          'kwargs': {
-              'TARGET_NAME': 1,
-              'DEFINES': '*',
-              'COMPILE_OPTIONS': '*',
-              'LINK_OPTIONS': '*',
-              'INCLUDE_DIRS': '*',
-              'LINK_DIRS': '*',
-              'SOURCE_FILES': '*',
-              'LINK_LIBRARIES': '*',
-          }
-      },
-      'elements_series_catch2_test_setup': {
+      'arquebus_catch2_test_setup': {
           'flags': [],
           'kwargs': {
               'TARGET_PREFIX': 1,
               'TEST_SOURCES': '*',
+              'PRIVATE_HEADER_PATH': 1,
               'INCLUDE_DIRS': '*',
               'LINK_LIBRARIES': '*',
           }
       },
-      'elements_series_catch2_constexpr_test_setup': {
+      'arquebus_catch2_constexpr_test_setup': {
           'flags': [],
           'kwargs': {
               'TARGET_PREFIX': 1,
-              'CONSTEXPR_PRIVATE_HEADER_PATH': 1,
+              'PRIVATE_HEADER_PATH': 1,
               'TEST_SOURCES': '*',
               'INCLUDE_DIRS': '*',
               'LINK_LIBRARIES': '*',

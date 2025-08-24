@@ -1,12 +1,14 @@
 include(GenerateExportHeader)
 
-add_library(arquebus api.cpp)
+set(ARQUEBUS_LIB_SOURCE_FILES api.cpp shared_memory.cpp)
+
+add_library(arquebus ${ARQUEBUS_LIB_SOURCE_FILES})
 
 add_library(arquebus::arquebus ALIAS arquebus)
 
 target_link_libraries(arquebus PRIVATE arquebus::arquebus_options arquebus::arquebus_warnings)
 
-target_link_system_libraries(arquebus PRIVATE fmt::fmt)
+target_link_system_libraries(arquebus PRIVATE fmt::fmt rt)
 
 target_include_directories(
   arquebus
@@ -23,7 +25,7 @@ set_target_properties(
 )
 
 generate_export_header(arquebus EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/include/arquebus/arquebus_export.hpp")
-configure_file(include/public/arquebus/version.hpp.in "${CMAKE_BINARY_DIR}/include/arquebus/version.hpp" ESCAPE_QUOTES)
+configure_file(include/version.hpp.in "${CMAKE_BINARY_DIR}/include/arquebus/version.hpp" ESCAPE_QUOTES)
 
 if(NOT BUILD_SHARED_LIBS)
   target_compile_definitions(arquebus PUBLIC EXAMPLE_STATIC_DEFINE)
