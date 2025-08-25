@@ -1,11 +1,11 @@
 #pragma once
 
-#include "spsc_var_msg_len_consumer.hpp"
-#include "spsc_var_msg_len_host.hpp"
-#include "spsc_var_msg_len_producer.hpp"
+#include "arquebus/spsc/var_msg/consumer.hpp"
+#include "arquebus/spsc/var_msg/host.hpp"
+#include "arquebus/spsc/var_msg/producer.hpp"
 
 
-#include <arquebus/version.hpp>
+#include "arquebus/version.hpp"
 
 namespace arquebus {
 

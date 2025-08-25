@@ -44,10 +44,6 @@ include(cmake/TestSetupHelpers.cmake)
 add_subdirectory(test)
 
 # create a custom target to copy the compile_commands.json from the build into the root level for external tools using
-# clangd
-add_custom_target(
-  copy_compile_commands ALL
-  COMMENT "copy compile_commands.json to root level"
-  COMMAND echo "--- Copy compile_commands.json to root level..."
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_CURRENT_SOURCE_DIR}
-)
+# clangd add_custom_target( copy_compile_commands ALL COMMENT "copy compile_commands.json to root level" COMMAND echo
+# "--- Copy compile_commands.json to root level..." COMMAND ${CMAKE_COMMAND} -E copy
+# ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_CURRENT_SOURCE_DIR} )

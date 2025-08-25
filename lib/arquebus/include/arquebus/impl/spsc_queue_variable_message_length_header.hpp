@@ -1,12 +1,13 @@
 #pragma once
 
 #include "arquebus/version.hpp"
+#include "buffer_size.hpp"
 #include "common_header.hpp"
 #include "queue_type.hpp"
 
 #include <atomic>
-#include <concepts>
 #include <chrono>
+#include <concepts>
 #include <new>
 #include <stdexcept>
 #include <thread>
@@ -17,11 +18,10 @@ namespace arquebus::impl {
   struct spsc_queue_variable_message_length_header
   {
     using MessageSize = TMessageSize;
+    using BufferSize = buffer_size<Size2NBits>;
+
     static constexpr auto CacheLineSize = std::hardware_destructive_interference_size;
     static constexpr auto QueueType = queue_type::SingleProducerSingleConsumerVariableMessageLength;
-    static constexpr auto QueueSize2NBits = Size2NBits;
-    static constexpr auto QueueSizeBytes = std::uint64_t{ 1ul << QueueSize2NBits };
-    static constexpr auto QueueSizeMask = std::uint64_t{ QueueSizeBytes - 1 };
 
     common_header header{};
 
@@ -31,7 +31,7 @@ namespace arquebus::impl {
     // we are using C-style array to avoid initialisation, it will be zero filled when we
     // map it into memory as a shared memory region
     // NOLINTNEXTLINE(*-avoid-c-arrays)
-    alignas(CacheLineSize) std::byte data[QueueSizeBytes];
+    alignas(CacheLineSize) std::byte data[BufferSize::Bytes];
 
 
     // the owner should initialise the queue
@@ -46,7 +46,7 @@ namespace arquebus::impl {
       header.message_size_type_size = sizeof(MessageSize);
       header.max_producers = 1;
       header.max_consumers = 1;
-      header.size_of_queue = QueueSizeBytes;
+      header.size_of_queue = BufferSize::Bytes;
 
       write_index.store(0, std::memory_order_release);
       read_index.store(0, std::memory_order_release);
@@ -78,7 +78,7 @@ namespace arquebus::impl {
       if (header.max_consumers != 1) {
         throw std::logic_error("incorrect max consumers");
       }
-      if (header.size_of_queue != QueueSizeBytes) {
+      if (header.size_of_queue != BufferSize::Bytes) {
         throw std::logic_error("incorrect size of queue");
       }
     }

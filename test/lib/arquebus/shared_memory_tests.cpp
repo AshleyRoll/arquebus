@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "arquebus/shared_memory.hpp"
+#include "arquebus/impl/shared_memory_helper.hpp"
 
 #include <array>
 #include <filesystem>
@@ -13,7 +13,7 @@ struct test_memory
 
 TEST_CASE("shared_memory_owner can create and clean up", "[arquebus]")
 {
-  using namespace arquebus;
+  using namespace arquebus::impl;
 
   shared_memory_owner<test_memory> owner{"test1"};
 
@@ -34,7 +34,7 @@ TEST_CASE("shared_memory_owner can create and clean up", "[arquebus]")
 
 TEST_CASE("shared_memory_user fails open when owner not created", "[arquebus]")
 {
-  using namespace arquebus;
+  using namespace arquebus::impl;
 
   shared_memory_user<test_memory> user{"test2"};
 
@@ -43,7 +43,7 @@ TEST_CASE("shared_memory_user fails open when owner not created", "[arquebus]")
 
 TEST_CASE("can map same data between owner and user", "[arquebus]")
 {
-  using namespace arquebus;
+  using namespace arquebus::impl;
 
   shared_memory_owner<test_memory> owner{"test3"};
   shared_memory_user<test_memory> user{"test3"};
@@ -65,7 +65,7 @@ TEST_CASE("can map same data between owner and user", "[arquebus]")
 
 TEST_CASE("can not create shared memory if it exists", "[arquebus]")
 {
-  using namespace arquebus;
+  using namespace arquebus::impl;
 
   shared_memory_owner<test_memory> owner1{"test4"};
   shared_memory_owner<test_memory> owner2{"test4"};

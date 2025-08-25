@@ -9,7 +9,7 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
   fmt::println("arquebus version: {} #{}", ver.version_string, ver.commit_short_hash);
 
   fmt::println("creating queue...");
-  arquebus::spsc_var_msg_len_consumer<23> queue{"spsc1"};
+  arquebus::spsc::var_msg::consumer<23> queue{"spsc1"};
   fmt::println("attaching queue...");
   queue.attach();
 

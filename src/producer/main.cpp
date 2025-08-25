@@ -1,5 +1,6 @@
 
 #include <arquebus/arquebus.hpp>
+
 #include <fmt/core.h>
 
 auto main(int /*argc*/, char const * /*argv*/[]) -> int
@@ -9,7 +10,7 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
   fmt::println("arquebus version: {} #{}", ver.version_string, ver.commit_short_hash);
 
   fmt::println("creating queue...");
-  arquebus::spsc_var_msg_len_producer<23, 100'000> queue{"spsc1"};
+  arquebus::spsc::var_msg::producer<23, 100'000> queue{"spsc1"};
   fmt::println("attaching queue...");
   queue.attach();
 
