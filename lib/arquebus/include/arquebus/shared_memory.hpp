@@ -1,5 +1,13 @@
 #pragma once
 
+#include "impl/fd_handle.hpp"
+
+// POSIX
+#include <fcntl.h>
+#include <sys/mman.h>
+
+#include <climits>
+#include <cstdint>
 #include <memory>
 #include <new>
 #include <stdexcept>
@@ -17,8 +25,13 @@ namespace arquebus {
       // shm namespace prefix for all shared memory objects created by this class
       static constexpr std::string_view ShmPrefix = "/arquebus_";
 
-      shared_memory(std::string_view name, std::size_t mappingSize);
-      ~shared_memory();
+      shared_memory(std::string_view name, std::size_t mappingSize)
+        : m_name{ make_shm_name(name) }
+        , m_isMappingOwner{ false }
+        , m_mapping{ nullptr }
+        , m_mappingSize{ mappingSize }
+      {}
+      ~shared_memory() { close(); }
 
       // no move or copy for now.
       shared_memory(shared_memory &&) = delete;
@@ -30,23 +43,95 @@ namespace arquebus {
       [[nodiscard]] auto mapping() const -> void * { return m_mapping; }
 
       // attempt to open and map the shared memory segment
-      // return true on success, false if the segment does not yet exist.
-      auto attach() -> bool;
+      void attach()
+      {
+        if (m_mapping != nullptr) {
+          throw std::logic_error("Shared memory segment already exists");
+        }
+
+        // attempt to open the shm object, but do not create it
+        fd_handle const shmFd{ ::shm_open(m_name.c_str(), O_RDWR, 0) };
+
+        if (shmFd < 0) {
+          throw std::runtime_error("Failed to open shared memory segment");
+        }
+
+        // create mapping
+        auto *mapping = ::mmap(nullptr, m_mappingSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
+        if (mapping == MAP_FAILED) {
+          throw std::runtime_error("Failed to map shared memory segment");
+        }
+
+        // mapped
+        m_isMappingOwner = false;
+        m_mapping = mapping;
+      }
 
       // attempt to create or open the shared memory segment as the owner
-      // if the segment was created, true is returned, if the segment already exists,
-      // false is returned.
-      auto create() -> bool;
+      void create()
+      {
+        if (m_mapping != nullptr) {
+          throw std::logic_error("Shared memory segment already exists");
+        }
+
+        // attempt to open or create the sgm object
+        fd_handle const shmFd{ ::shm_open(m_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0600) };
+
+        if (shmFd < 0) {
+          auto err = errno;
+          if (err == EEXIST) {
+            throw std::runtime_error("Shared memory segment already exists");
+          }
+          throw std::runtime_error("Failed to create shared memory segment");
+        }
+
+        // size the shared memory object
+        if (::ftruncate(shmFd, static_cast<std::int64_t>(m_mappingSize)) < 0) {
+          throw std::runtime_error("Failed to resize shared memory segment");
+        }
+
+        // create mapping
+        auto *mapping = ::mmap(nullptr, m_mappingSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
+        if (mapping == MAP_FAILED) {
+          throw std::runtime_error("Failed to map shared memory segment");
+        }
+
+        // mapped
+        m_isMappingOwner = true;
+        m_mapping = mapping;
+      }
 
       // close the shared memory segment and unmap it
       // safe to call if already closed, or the open failed.
-      void close();
+      void close()
+      {
+        if (m_mapping != nullptr) {
+          ::munmap(m_mapping, m_mappingSize);
+          m_mapping = nullptr;
+        }
+
+        if (m_isMappingOwner) {
+          ::shm_unlink(m_name.c_str());
+        }
+      }
 
     private:
       std::string m_name;
       bool m_isMappingOwner;
       void *m_mapping;
       std::size_t const m_mappingSize;
+
+      static auto make_shm_name(std::string_view name) -> std::string
+      {
+        if (name.empty() or name.size() >= (NAME_MAX - ShmPrefix.size())) {
+          throw std::invalid_argument("name is empty or too long");
+        }
+
+        std::string fullName{ ShmPrefix };
+        fullName.append(name);
+
+        return fullName;
+      }
     };
 
   }  // namespace impl
@@ -68,17 +153,13 @@ namespace arquebus {
     shared_memory_owner(shared_memory_owner const &) = delete;
     auto operator=(shared_memory_owner const &) -> shared_memory_owner & = delete;
 
-    auto create() -> bool
+    void create()
     {
-      if (!m_sharedMemory.create()) {
-        return false;
-      }
+      m_sharedMemory.create();
 
       // construct the T in place
       // NOLINTNEXTLINE(*-owning-memory)
       m_mapping = new (m_sharedMemory.mapping()) T;
-
-      return true;
     }
 
     [[nodiscard]] auto name() const -> std::string const & { return m_sharedMemory.name(); }
@@ -109,17 +190,13 @@ namespace arquebus {
     shared_memory_user(shared_memory_user const &) = delete;
     auto operator=(shared_memory_user const &) -> shared_memory_user & = delete;
 
-    auto attach() -> bool
+    void attach()
     {
-      if (!m_sharedMemory.attach()) {
-        return false;
-      }
+      m_sharedMemory.attach();
 
       // construct the T in place
       // NOLINTNEXTLINE(*-pro-type-reinterpret-cast)
       m_mapping = reinterpret_cast<T *>(m_sharedMemory.mapping());
-
-      return true;
     }
 
     [[nodiscard]] auto name() const -> std::string const & { return m_sharedMemory.name(); }

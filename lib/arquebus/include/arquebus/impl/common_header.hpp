@@ -1,6 +1,5 @@
 #pragma once
 
-#include "arquebus/arquebus_export.hpp"
 #include "arquebus/semantic_version.hpp"
 #include "queue_type.hpp"
 
@@ -16,11 +15,12 @@ namespace arquebus {
   // The type is used as a flag to indicate that initialisation is complete. it will be zero until
   // all initialisation is completed. Producers and consumers should spin on that value waiting for
   // the host to complete configuration.
-  ARQUEBUS_EXPORT struct common_header
+  struct common_header
   {
 
     std::atomic<queue_type> type;
     semantic_version arquebus_version;
+    std::size_t message_size_type_size;
     std::size_t max_producers;
     std::size_t max_consumers;
     std::uint64_t size_of_queue;

@@ -38,7 +38,7 @@ TEST_CASE("shared_memory_user fails open when owner not created", "[arquebus]")
 
   shared_memory_user<test_memory> user{"test2"};
 
-  REQUIRE_NOTHROW( user.attach() == false );
+  REQUIRE_THROWS( user.attach() );
 }
 
 TEST_CASE("can map same data between owner and user", "[arquebus]")
@@ -71,6 +71,6 @@ TEST_CASE("can not create shared memory if it exists", "[arquebus]")
   shared_memory_owner<test_memory> owner2{"test4"};
 
   REQUIRE_NOTHROW(owner1.create());
-  REQUIRE_NOTHROW(not owner2.create());
+  REQUIRE_THROWS(owner2.create());
 
 }

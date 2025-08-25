@@ -1,11 +1,11 @@
 #pragma once
 
 #include "arquebus/version.hpp"
-#include "arquebus/arquebus_export.hpp"
 #include "common_header.hpp"
 #include "queue_type.hpp"
 
 #include <atomic>
+#include <concepts>
 #include <chrono>
 #include <new>
 #include <stdexcept>
@@ -13,9 +13,10 @@
 
 namespace arquebus::impl {
 
-  template<std::uint8_t Size2NBits>
-  ARQUEBUS_EXPORT struct spsc_queue_variable_message_length_header
+  template<std::uint8_t Size2NBits, std::unsigned_integral TMessageSize>
+  struct spsc_queue_variable_message_length_header
   {
+    using MessageSize = TMessageSize;
     static constexpr auto CacheLineSize = std::hardware_destructive_interference_size;
     static constexpr auto QueueType = queue_type::SingleProducerSingleConsumerVariableMessageLength;
     static constexpr auto QueueSize2NBits = Size2NBits;
@@ -42,6 +43,7 @@ namespace arquebus::impl {
       }
 
       header.arquebus_version = version_details{}.version;
+      header.message_size_type_size = sizeof(MessageSize);
       header.max_producers = 1;
       header.max_consumers = 1;
       header.size_of_queue = QueueSizeBytes;
@@ -66,6 +68,9 @@ namespace arquebus::impl {
 
       if (type != QueueType) {
         throw std::logic_error("incorrect queue type");
+      }
+      if(header.message_size_type_size != sizeof(MessageSize)) {
+        throw std::logic_error("incorrect message size type");
       }
       if (header.max_producers != 1) {
         throw std::logic_error("incorrect max producers");

@@ -2,7 +2,7 @@
 
 #include <unistd.h>
 
-namespace arquebus::util {
+namespace arquebus::impl {
 
   class fd_handle
   {
