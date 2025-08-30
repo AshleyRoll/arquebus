@@ -8,6 +8,8 @@
 
 namespace arquebus::spsc::var_msg {
 
+  struct danger_delete_existing_shared_memory_segment_tag {};
+
   /// Single Producer Single Consumer Queue Host interface
   ///
   /// @tparam Size2NBits Queue Size in exponent for 2^N
@@ -22,7 +24,8 @@ namespace arquebus::spsc::var_msg {
       : m_queueOwner(name)
     {}
 
-    void initialise()
+
+    void create()
     {
       m_queueOwner.create();
 
@@ -30,9 +33,19 @@ namespace arquebus::spsc::var_msg {
       m_queue->initialise();
     }
 
+    // If the shared memory segment already exists, delete it before creating a new one
+    //
+    // WARNING: existing open mapping will still see old segment, new mappings will see
+    //          new file. Be VERY sure you want to do this!
+    void create(danger_delete_existing_shared_memory_segment_tag /*unused*/)
+    {
+      m_queueOwner.delete_existing();
+      create();
+    }
+
   private:
     impl::shared_memory_owner<QueueLayout> m_queueOwner;
     QueueLayout *m_queue{ nullptr };
   };
 
-}  // namespace arquebus
+}  // namespace arquebus::spsc::var_msg

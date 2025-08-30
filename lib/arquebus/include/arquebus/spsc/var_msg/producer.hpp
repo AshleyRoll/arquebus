@@ -24,13 +24,17 @@ namespace arquebus::spsc::var_msg {
     std::unsigned_integral TMessageSize = std::uint32_t>
   class producer
   {
+  public:
     using QueueLayout = impl::spsc_queue_variable_message_length_header<Size2NBits, TMessageSize>;
     using MessageSize = TMessageSize;
     static constexpr auto BatchMessageReserve = std::uint64_t{ NBytesBatchMessageReserve };
 
-    static_assert(BatchMessageReserve < QueueLayout::BufferSize::Bytes, "Can not reserve more than the queue size");
+    static_assert(
+      BatchMessageReserve < (QueueLayout::BufferSize::Bytes - sizeof(MessageSize)),
+      "Can not reserve more than the queue size"
+    );
 
-  public:
+
     explicit producer(std::string_view name)
       : m_queueUser(name)
     {}
@@ -41,6 +45,8 @@ namespace arquebus::spsc::var_msg {
 
       m_queue = m_queueUser.mapping();
       m_queue->wait_and_validate();
+      // establish the initial write offset
+      m_queue->write_index.store(m_cachedWriteIndex, std::memory_order_release);
     }
 
     /// Allocate a write buffer for a message of numberBytes in length.
@@ -49,11 +55,14 @@ namespace arquebus::spsc::var_msg {
     ///
     /// @param messageSizeBytes Message Length
     /// @return a span<> for the caller to fill with message data
-    auto allocate_write(MessageSize messageSizeBytes) -> std::span<std::byte>
+    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) -> std::span<std::uint8_t>
     {
+      if (messageSizeBytes >= BatchMessageReserve) [[unlikely]] {
+        throw std::invalid_argument("Message size is larger than batch reserve size");
+      }
+
       // message + the next size / skip block ready for next message
       auto const allocationSize = messageSizeBytes + sizeof(MessageSize);
-
 
       // We have to be careful of wrapping around the data index as a std::span<>
       // can not cope with that. Therefore, we have to maintain the following:
@@ -87,16 +96,15 @@ namespace arquebus::spsc::var_msg {
       // update the shared read index to release all pending messages
       // We are pre-allocating the next size/skip indicator, so we have to release to just before that
       // as it is not yet valid
-      m_queue->write_index.store(m_allocatedIndex - sizeof(MessageSize), std::memory_order_relaxed);
+      m_queue->read_index.store(m_allocatedIndex - sizeof(MessageSize), std::memory_order_release);
     }
-
 
   private:
     impl::shared_memory_user<QueueLayout> m_queueUser;
     QueueLayout *m_queue{ nullptr };
     // a local copy of the write index, we take chunks of data at a time
     // any only update the atomic write index when we need more
-    std::uint64_t m_cachedWriteIndex{ 0 };
+    std::uint64_t m_cachedWriteIndex{ sizeof(MessageSize) };
 
     // a local read index of allocated, but not committed/flushed message data
     // once the caller calls flush(), we release this to the consumer
@@ -109,24 +117,30 @@ namespace arquebus::spsc::var_msg {
     {
       // increase the write index by the BatchMessageReserve and this message size to ensure enough space
       // and then determine if we need to skip the allocation forward to the next index wrap.
-      m_cachedWriteIndex += BatchMessageReserve + minimumRequired;
-      m_queue->write_index.store(m_cachedWriteIndex, std::memory_order_release);
+      m_cachedWriteIndex += BatchMessageReserve;
 
       auto const offsetOfAllocatedIndex = QueueLayout::BufferSize::to_offset(m_allocatedIndex);
-      if (offsetOfAllocatedIndex + minimumRequired >= QueueLayout::BufferSize::Bytes) [[unlikely]] {
+      // The current allocation and minRequired already contains the size bytes
+      if (offsetOfAllocatedIndex + minimumRequired >= QueueLayout::BufferSize::Bytes + sizeof(MessageSize))
+        [[unlikely]] {
         // We know we have a safe allocation to store MessageSize, so we need to indicate that the
         // remaining block is no longer valid and the consumer should skip back to the beginning of the
         // queue buffer.
-        auto *pBuffer = &m_queue->data[QueueLayout::BufferSize::to_offset(m_allocatedIndex)];
+        auto *pBuffer = &m_queue->data[offsetOfAllocatedIndex];
         MessageSize zero{ 0u };
         // write the message size into the buffer, note that this is actually already reserved
         // and know safe place to write "before" the current allocation index
         std::memcpy(pBuffer - sizeof(MessageSize), &zero, sizeof(MessageSize));
 
         // increment our allocation along to the beginning of the queue buffer, and include the
-        // reserved "next" size.
-        m_allocatedIndex += QueueLayout::BufferSize::distance_to_buffer_start(m_allocatedIndex) + sizeof(MessageSize);
+        // reserved "next" size. this will effectively place the next size at index 0
+        auto wrapCount = QueueLayout::BufferSize::distance_to_buffer_start(m_allocatedIndex) + sizeof(MessageSize);
+        m_allocatedIndex += wrapCount;
+        m_cachedWriteIndex += wrapCount;
       }
+
+      // inform consumer of updated allocation
+      m_queue->write_index.store(m_cachedWriteIndex, std::memory_order_release);
     }
   };
 

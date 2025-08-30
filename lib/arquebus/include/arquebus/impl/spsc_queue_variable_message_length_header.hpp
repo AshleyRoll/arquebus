@@ -24,14 +24,13 @@ namespace arquebus::impl {
     static constexpr auto QueueType = queue_type::SingleProducerSingleConsumerVariableMessageLength;
 
     common_header header{};
-
     alignas(CacheLineSize) std::atomic_uint64_t write_index{ 0 };
     alignas(CacheLineSize) std::atomic_uint64_t read_index{ 0 };
 
     // we are using C-style array to avoid initialisation, it will be zero filled when we
     // map it into memory as a shared memory region
     // NOLINTNEXTLINE(*-avoid-c-arrays)
-    alignas(CacheLineSize) std::byte data[BufferSize::Bytes];
+    alignas(CacheLineSize) std::uint8_t data[BufferSize::Bytes];
 
 
     // the owner should initialise the queue

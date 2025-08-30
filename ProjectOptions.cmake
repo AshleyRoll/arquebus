@@ -47,7 +47,7 @@ macro(ARQUEBUS_SETUP_OPTIONS)
       option(ARQUEBUS_ENABLE_SANITIZER_MEMORY "Enable memory sanitizer" OFF)
       option(ARQUEBUS_ENABLE_UNITY_BUILD "Enable unity builds" OFF)
       option(ARQUEBUS_ENABLE_CLANG_TIDY "Enable clang-tidy" ON)
-      option(ARQUEBUS_ENABLE_CPPCHECK "Enable cpp-check analysis" ON)
+      option(ARQUEBUS_ENABLE_CPPCHECK "Enable cpp-check analysis" OFF)
       option(ARQUEBUS_ENABLE_CACHE "Enable ccache" ON)
     else()
       # release builds

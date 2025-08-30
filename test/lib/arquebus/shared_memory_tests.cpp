@@ -7,7 +7,7 @@
 
 struct test_memory
 {
-  std::array<int, 100> data;
+  std::array<int, 100> data;  // NOLINT
 };
 
 
@@ -23,7 +23,7 @@ TEST_CASE("shared_memory_owner can create and clean up", "[arquebus]")
 
   CHECK(std::filesystem::exists("/dev/shm" + owner.name()));
 
-  auto *ptr = owner.mapping();
+  auto const *ptr = owner.mapping();
 
   REQUIRE(ptr != nullptr);
 
@@ -51,16 +51,16 @@ TEST_CASE("can map same data between owner and user", "[arquebus]")
   REQUIRE_NOTHROW(owner.create());
   REQUIRE_NOTHROW(user.attach());
 
-  auto *o = owner.mapping();
-  auto *u = user.mapping();
+  auto *oMap = owner.mapping();
+  auto *uMap = user.mapping();
 
-  CHECK(o != u);
+  CHECK(oMap != uMap);
 
-  CHECK(o->data[0] == 0);
-  CHECK(u->data[0] == 0);
+  CHECK(oMap->data[0] == 0);
+  CHECK(uMap->data[0] == 0);
 
-  o->data[0] = 1;
-  CHECK(u->data[0] == 1);
+  oMap->data[0] = 1;
+  CHECK(uMap->data[0] == 1);
 }
 
 TEST_CASE("can not create shared memory if it exists", "[arquebus]")

@@ -14,4 +14,8 @@ namespace arquebus {
     std::string_view commit_short_hash{ "@GIT_HASH_SHORT@" };
     semantic_version version{semantic_version::parse("@PROJECT_VERSION@")};
   };
+
+  // get the current library version
+  inline auto version() -> version_details { return {}; }
+
 }  // namespace arquebus

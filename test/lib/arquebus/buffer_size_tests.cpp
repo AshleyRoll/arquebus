@@ -3,22 +3,24 @@
 
 #include "arquebus/impl/buffer_size.hpp"
 
+#include <cstdint>
+
 
 TEST_CASE("buffer_size computes pow2 size and mask", "[arquebus]")
 {
   using namespace arquebus::impl;
 
-  CHECK(buffer_size<1>::Bytes == (1u << 1));
-  CHECK(buffer_size<2>::Bytes == (1u << 2));
-  CHECK(buffer_size<3>::Bytes == (1u << 3));
-  CHECK(buffer_size<4>::Bytes == (1u << 4));
-  CHECK(buffer_size<5>::Bytes == (1u << 5));
-  CHECK(buffer_size<6>::Bytes == (1u << 6));
-  CHECK(buffer_size<7>::Bytes == (1u << 7));
-  CHECK(buffer_size<8>::Bytes == (1u << 8));
-  CHECK(buffer_size<20>::Bytes == (1u << 20));
-  CHECK(buffer_size<30>::Bytes == (1u << 30));
-  CHECK(buffer_size<31>::Bytes == (1u << 31));
+  CHECK(buffer_size<1>::Bytes == (1u << 1u));
+  CHECK(buffer_size<2>::Bytes == (1u << 2u));
+  CHECK(buffer_size<3>::Bytes == (1u << 3u));
+  CHECK(buffer_size<4>::Bytes == (1u << 4u));
+  CHECK(buffer_size<5>::Bytes == (1u << 5u));
+  CHECK(buffer_size<6>::Bytes == (1u << 6u));
+  CHECK(buffer_size<7>::Bytes == (1u << 7u));
+  CHECK(buffer_size<8>::Bytes == (1u << 8u));
+  CHECK(buffer_size<20>::Bytes == (1u << 20u));
+  CHECK(buffer_size<30>::Bytes == (1u << 30u));
+  CHECK(buffer_size<31>::Bytes == (1u << 31u));
 
   CHECK(buffer_size<1>::Mask == 0b0000'0000'0000'0000'0000'0000'0000'0001ul);
   CHECK(buffer_size<2>::Mask == 0b0000'0000'0000'0000'0000'0000'0000'0011ul);
@@ -48,6 +50,7 @@ TEST_CASE("buffer_size to_offset", "[arquebus]")
 TEST_CASE("buffer_size distance_to_buffer_start", "[arquebus]")
 {
   using namespace arquebus::impl;
+  // NOLINTNEXTLINE(*-magic-numbers)
   using B = buffer_size<8>;
 
   auto i = GENERATE(0, 1, 2, 3, 100, 200, 254, 255, 256, 257, 400, 500, 510, 511, 512, 513, 514);

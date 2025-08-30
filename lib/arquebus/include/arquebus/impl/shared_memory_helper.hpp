@@ -38,6 +38,11 @@ namespace arquebus::impl {
     [[nodiscard]] auto name() const -> std::string const & { return m_name; }
     [[nodiscard]] auto mapping() const -> void * { return m_mapping; }
 
+    void delete_existing()
+    {
+        ::shm_unlink(m_name.c_str());
+    }
+
     // attempt to open and map the shared memory segment
     void attach()
     {
@@ -53,14 +58,14 @@ namespace arquebus::impl {
       }
 
       // create mapping
-      auto *mapping = ::mmap(nullptr, m_mappingSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
-      if (mapping == MAP_FAILED) {
+      auto *memMapping = ::mmap(nullptr, m_mappingSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
+      if (memMapping == MAP_FAILED) {
         throw std::runtime_error("Failed to map shared memory segment");
       }
 
       // mapped
       m_isMappingOwner = false;
-      m_mapping = mapping;
+      m_mapping = memMapping;
     }
 
     // attempt to create or open the shared memory segment as the owner
@@ -87,14 +92,14 @@ namespace arquebus::impl {
       }
 
       // create mapping
-      auto *mapping = ::mmap(nullptr, m_mappingSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
-      if (mapping == MAP_FAILED) {
+      auto *memMapping = ::mmap(nullptr, m_mappingSize, PROT_READ | PROT_WRITE, MAP_SHARED, shmFd, 0);
+      if (memMapping == MAP_FAILED) {
         throw std::runtime_error("Failed to map shared memory segment");
       }
 
       // mapped
       m_isMappingOwner = true;
-      m_mapping = mapping;
+      m_mapping = memMapping;
     }
 
     // close the shared memory segment and unmap it
@@ -146,6 +151,8 @@ namespace arquebus::impl {
     auto operator=(shared_memory_owner &&) -> shared_memory_owner & = delete;
     shared_memory_owner(shared_memory_owner const &) = delete;
     auto operator=(shared_memory_owner const &) -> shared_memory_owner & = delete;
+
+    void delete_existing() { m_sharedMemory.delete_existing(); }
 
     void create()
     {
