@@ -48,15 +48,15 @@ namespace {
     std::iota(w1.begin(), w1.end(), 1);
     CHECK(pQueue->read_index.load() == 0);
     prod.flush();
-    CHECK(pQueue->read_index.load() == 15 + sizeof(SizeType));
+    CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType));
     CHECK(pQueue->write_index.load() >= pQueue->read_index.load());
 
     auto w2 = prod.allocate_write(5);
     CHECK(w2.size() == 5);
     std::iota(w2.begin(), w2.end(), 1);
-    CHECK(pQueue->read_index.load() == 15 + sizeof(SizeType));
+    CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType));
     prod.flush();
-    CHECK(pQueue->read_index.load() == 15 + sizeof(SizeType) + 5 + sizeof(SizeType));
+    CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType) + w2.size() + sizeof(SizeType));
     CHECK(pQueue->write_index.load() >= pQueue->read_index.load());
 
     // validate format
@@ -65,13 +65,13 @@ namespace {
     SizeType s{};
 
     std::memcpy(&s, &data[0], sizeof(SizeType));
-    REQUIRE(s == 15);
-    std::span<std::uint8_t const> m1{ &data[sizeof(SizeType)], 15 };
+    REQUIRE(s == w1.size());
+    std::span<std::uint8_t const> m1{ &data[sizeof(SizeType)], w1.size() };
     CHECK_THAT(m1, RangeEquals(w1));
 
-    std::memcpy(&s, &data[sizeof(SizeType) + 15], sizeof(SizeType));
-    REQUIRE(s == 5);
-    std::span<std::uint8_t const> m2{ &data[sizeof(SizeType) + 15 + sizeof(SizeType)], 5 };
+    std::memcpy(&s, &data[sizeof(SizeType) + w1.size()], sizeof(SizeType));
+    REQUIRE(s == w2.size());
+    std::span<std::uint8_t const> m2{ &data[sizeof(SizeType) + w1.size() + sizeof(SizeType)], w2.size() };
     CHECK_THAT(m2, RangeEquals(w2));
   }
 
@@ -107,19 +107,19 @@ namespace {
 
     CHECK(pQueue->write_index.load() >= pQueue->read_index.load());
 
-    [[maybe_unused]] auto w1 = prod.allocate_write(20);
+    auto w1 = prod.allocate_write(20);
     prod.flush();
     CHECK(pQueue->write_index.load() >= pQueue->read_index.load());
 
     // should have a length recorded in location 0
     std::memcpy(&s, &data[0], sizeof(SizeType));
-    REQUIRE(s == 20);
+    REQUIRE(s == w1.size());
 
     [[maybe_unused]] auto w2 = prod.allocate_write(20);
     prod.flush();
     CHECK(pQueue->write_index.load() >= pQueue->read_index.load());
 
-    std::memcpy(&s, &data[sizeof(SizeType) + 20], sizeof(SizeType));
+    std::memcpy(&s, &data[sizeof(SizeType) + w1.size()], sizeof(SizeType));
     REQUIRE(s == 20);
 
     [[maybe_unused]] auto w3 = prod.allocate_write(35);
@@ -129,12 +129,12 @@ namespace {
     // should have a skip indicator because the next
     // message would not fit
 
-    std::memcpy(&s, &data[(2*sizeof(SizeType)) + 20 + 20], sizeof(SizeType));
+    std::memcpy(&s, &data[sizeof(SizeType) + w1.size() + sizeof(SizeType) + w2.size()], sizeof(SizeType));
     REQUIRE(s == 0);
 
     // and now offset 0 should have a size of 20 as the second message should have wrapped
     std::memcpy(&s, &data[0], sizeof(SizeType));
-    REQUIRE(s == 35);
+    REQUIRE(s == w3.size());
   }
 
 }  // namespace
@@ -176,6 +176,7 @@ TEST_CASE("spsc::var_msg::producer wraps queue uint32_t size", "[arquebus][spsc]
 
 TEST_CASE("spsc::var_msg::producer wraps queue uint64_t size", "[arquebus][spsc][producer]")
 {
+  // note that this case hits the wrap exactly at the boundary case
   test_wrap_queue<std::uint64_t>("spsc-var_msg-wrap_test-64");
 }
 

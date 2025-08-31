@@ -117,12 +117,13 @@ namespace arquebus::spsc::var_msg {
     {
       // increase the write index by the BatchMessageReserve and this message size to ensure enough space
       // and then determine if we need to skip the allocation forward to the next index wrap.
-      m_cachedWriteIndex += BatchMessageReserve;
+      m_cachedWriteIndex += BatchMessageReserve + sizeof(MessageSize);
 
-      auto const offsetOfAllocatedIndex = QueueLayout::BufferSize::to_offset(m_allocatedIndex);
       // The current allocation and minRequired already contains the size bytes
-      if (offsetOfAllocatedIndex + minimumRequired >= QueueLayout::BufferSize::Bytes + sizeof(MessageSize))
-        [[unlikely]] {
+      auto const offsetOfAllocatedIndex = QueueLayout::BufferSize::to_offset(m_allocatedIndex - sizeof(MessageSize));
+			auto const offsetOfNextAllocationIndex = QueueLayout::BufferSize::to_offset(m_allocatedIndex + minimumRequired);
+      // have we wrapped?
+      if (offsetOfNextAllocationIndex< offsetOfAllocatedIndex) [[unlikely]] {
         // We know we have a safe allocation to store MessageSize, so we need to indicate that the
         // remaining block is no longer valid and the consumer should skip back to the beginning of the
         // queue buffer.
@@ -130,7 +131,7 @@ namespace arquebus::spsc::var_msg {
         MessageSize zero{ 0u };
         // write the message size into the buffer, note that this is actually already reserved
         // and know safe place to write "before" the current allocation index
-        std::memcpy(pBuffer - sizeof(MessageSize), &zero, sizeof(MessageSize));
+        std::memcpy(pBuffer, &zero, sizeof(MessageSize));
 
         // increment our allocation along to the beginning of the queue buffer, and include the
         // reserved "next" size. this will effectively place the next size at index 0
