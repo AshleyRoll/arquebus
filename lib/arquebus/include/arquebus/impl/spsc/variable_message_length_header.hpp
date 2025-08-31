@@ -1,9 +1,9 @@
 #pragma once
 
+#include "arquebus/impl/buffer_size.hpp"
+#include "arquebus/impl/common_header.hpp"
+#include "arquebus/impl/queue_type.hpp"
 #include "arquebus/version.hpp"
-#include "buffer_size.hpp"
-#include "common_header.hpp"
-#include "queue_type.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -12,15 +12,14 @@
 #include <stdexcept>
 #include <thread>
 
-namespace arquebus::impl {
+namespace arquebus::impl::spsc {
 
-  template<std::uint8_t Size2NBits, std::unsigned_integral TMessageSize>
-  struct spsc_queue_variable_message_length_header
+  template<std::uint8_t Size2NBits, std::unsigned_integral TMessageSize, std::size_t CacheLineSize>
+  struct variable_message_length_header
   {
     using MessageSize = TMessageSize;
     using BufferSize = buffer_size<Size2NBits>;
 
-    static constexpr auto CacheLineSize = std::hardware_destructive_interference_size;
     static constexpr auto QueueType = queue_type::SingleProducerSingleConsumerVariableMessageLength;
 
     common_header header{};
@@ -64,11 +63,13 @@ namespace arquebus::impl {
       } while (type == queue_type::None);
 
       // owner has initialised
-
+      if(header.magic_number != common_header::HeaderMagicNumber) {
+        throw std::logic_error("bad magic number for header");
+      }
       if (type != QueueType) {
         throw std::logic_error("incorrect queue type");
       }
-      if(header.message_size_type_size != sizeof(MessageSize)) {
+      if (header.message_size_type_size != sizeof(MessageSize)) {
         throw std::logic_error("incorrect message size type");
       }
       if (header.max_producers != 1) {
@@ -83,4 +84,4 @@ namespace arquebus::impl {
     }
   };
 
-}  // namespace arquebus
+}  // namespace arquebus::impl::spsc

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "arquebus/impl/shared_memory_helper.hpp"
-#include "arquebus/impl/spsc_queue_variable_message_length_header.hpp"
+#include "arquebus/impl/spsc/variable_message_length_header.hpp"
 
 #include <cstdint>
 #include <cstring>
@@ -17,15 +17,17 @@ namespace arquebus::spsc::var_msg {
   /// @tparam NBytesBatchMessageReserve Number of bytes to allocate from queue as a chunk to prevent constant
   /// write index updates.
   /// @tparam TMessageSize Type for indicating size of message.
+  /// @tparam CacheLineSize The CPU cache line size. Defaults to std::hardware_destructive_interference_size
   ///
   template<
     std::uint8_t Size2NBits,
     std::size_t NBytesBatchMessageReserve,
-    std::unsigned_integral TMessageSize = std::uint32_t>
+    std::unsigned_integral TMessageSize = std::uint32_t,
+    std::size_t CacheLineSize = std::hardware_destructive_interference_size >
   class producer
   {
   public:
-    using QueueLayout = impl::spsc_queue_variable_message_length_header<Size2NBits, TMessageSize>;
+    using QueueLayout = impl::spsc::variable_message_length_header<Size2NBits, TMessageSize, CacheLineSize>;
     using MessageSize = TMessageSize;
     static constexpr auto BatchMessageReserve = std::uint64_t{ NBytesBatchMessageReserve };
 

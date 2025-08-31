@@ -4,6 +4,7 @@
 #include "queue_type.hpp"
 
 #include <atomic>
+#include <bit>
 #include <cstdint>
 
 namespace arquebus {
@@ -17,13 +18,16 @@ namespace arquebus {
   // the host to complete configuration.
   struct common_header
   {
+    static constexpr std::uint64_t HeaderMagicNumber =
+      std::bit_cast<std::uint64_t>(std::array{ 'A', 'R', 'Q', 'U', 'E', 'B', 'U', 'S' });
 
-    std::atomic<queue_type> type;
-    semantic_version arquebus_version;
-    std::size_t message_size_type_size;
-    std::size_t max_producers;
-    std::size_t max_consumers;
-    std::uint64_t size_of_queue;
+    std::uint64_t magic_number{ HeaderMagicNumber };
+    std::atomic<queue_type> type{ queue_type::None };
+    semantic_version arquebus_version{};
+    std::size_t message_size_type_size{};
+    std::size_t max_producers{};
+    std::size_t max_consumers{};
+    std::uint64_t size_of_queue{};
   };
 
 }  // namespace arquebus
