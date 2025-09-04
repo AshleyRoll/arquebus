@@ -2,6 +2,8 @@
 
 An experiment in low latency inter-process shared memory queues.
 
+_Currently under development_ lots more work to go.
+
 ## Setup and Build
 
 1. Clone the repo
@@ -16,4 +18,4 @@ An experiment in low latency inter-process shared memory queues.
    In the top level project folder run `pre-commit install`
 
 Current development is done in CLion. Open the project and enable
-one of the CMake Presets. Suggest `clang-release-static` for now.
+one of the CMake Presets. Suggest `clang-release-dbg` for now.
