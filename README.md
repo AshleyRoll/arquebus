@@ -4,6 +4,15 @@ An experiment in low latency inter-process shared memory queues.
 
 _Currently under development_ lots more work to go.
 
+## TODO
+
+- CI/CD pipelines
+- complete Single Producer Single Consumer Queue
+- build performance measurement suite
+- implement Single Producer Multiple Consumer Queue
+- implement Multiple Producer Single Consumer Queue
+- improve CMake to allow consumption as library in other projects
+
 ## Setup and Build
 
 1. Clone the repo
