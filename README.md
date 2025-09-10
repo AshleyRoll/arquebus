@@ -4,6 +4,10 @@ An experiment in low latency inter-process shared memory queues.
 
 _Currently under development_ lots more work to go.
 
+This currently only supports Linux but should work for other POSIX like operating systems.
+This is a limitation only on the way we open and map shared memory and this can later be
+extended to Windows etc.
+
 ## TODO
 
 - CI/CD pipelines
@@ -12,6 +16,8 @@ _Currently under development_ lots more work to go.
 - implement Single Producer Multiple Consumer Queue
 - implement Multiple Producer Single Consumer Queue
 - improve CMake to allow consumption as library in other projects
+- implement fixed-size variants of the queues
+- add support for Windows shared memory mapping
 
 ## Setup and Build
 
