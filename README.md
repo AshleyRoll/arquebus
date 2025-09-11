@@ -10,14 +10,14 @@ extended to Windows etc.
 
 ## TODO
 
-- CI/CD pipelines
-- complete Single Producer Single Consumer Queue
-- build performance measurement suite
-- implement Single Producer Multiple Consumer Queue
-- implement Multiple Producer Single Consumer Queue
-- improve CMake to allow consumption as library in other projects
-- implement fixed-size variants of the queues
-- add support for Windows shared memory mapping
+- [ ] CI/CD pipelines
+- [x] complete Single Producer Single Consumer Queue
+- [ ] build performance measurement suite
+- [ ] implement Single Producer Multiple Consumer Queue
+- [ ] implement Multiple Producer Single Consumer Queue
+- [ ] improve CMake to allow consumption as library in other projects
+- [ ] implement fixed-size variants of the queues
+- [ ] add support for Windows shared memory mapping
 
 ## Setup and Build
 
