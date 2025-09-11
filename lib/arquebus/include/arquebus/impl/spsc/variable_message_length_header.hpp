@@ -23,7 +23,9 @@ namespace arquebus::impl::spsc {
     static constexpr auto QueueType = queue_type::SingleProducerSingleConsumerVariableMessageLength;
 
     common_header header{};
+    // The write index is what the producer has "reserved" up to and, it will be writing into these bytes
     alignas(CacheLineSize) std::atomic_uint64_t write_index{ 0 };
+    // The read index is what the producer has "released" to the consumer as valid message data.
     alignas(CacheLineSize) std::atomic_uint64_t read_index{ 0 };
 
     // we are using C-style array to avoid initialisation, it will be zero filled when we

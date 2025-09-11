@@ -195,9 +195,15 @@ namespace arquebus::impl {
     {
       m_sharedMemory.attach();
 
-      // construct the T in place
+      // access the already constructed T.
+      // prefer the std::start_lifetime_as() if it is supported.
+#if __cpp_lib_start_lifetime_as
+#warning "std::start_lifetime as is being used, review the implementation now that it is supported"
+      m_mapping = std::start_lifetime_as<T>(m_sharedMemory.mapping());
+#else
       // NOLINTNEXTLINE(*-pro-type-reinterpret-cast)
       m_mapping = reinterpret_cast<T *>(m_sharedMemory.mapping());
+#endif
     }
 
     [[nodiscard]] auto name() const -> std::string const & { return m_sharedMemory.name(); }

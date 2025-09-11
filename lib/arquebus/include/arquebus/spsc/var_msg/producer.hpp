@@ -36,11 +36,15 @@ namespace arquebus::spsc::var_msg {
       "Can not reserve more than the queue size"
     );
 
-
+    /// Create a producer for the given queue name. The name must match that created by the host
+    /// and used by the consumer.
+    ///
+    /// @param name The unique name of the queue to attach to
     explicit producer(std::string_view name)
       : m_queueUser(name)
     {}
 
+    /// Attach the producer to the queue that has been created by a host.
     void attach()
     {
       m_queueUser.attach();
@@ -53,16 +57,13 @@ namespace arquebus::spsc::var_msg {
 
     /// Allocate a write buffer for a message of numberBytes in length.
     ///
-    /// A size of zero is not supported.
+    /// A messageSizeBytes of zero or greater or equal to BatchMessageReserve is not supported and
+    /// will cause incorrect behaviour.
     ///
     /// @param messageSizeBytes Message Length
     /// @return a span<> for the caller to fill with message data
-    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) -> std::span<std::uint8_t>
+    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) noexcept -> std::span<std::uint8_t>
     {
-      if (messageSizeBytes >= BatchMessageReserve) [[unlikely]] {
-        throw std::invalid_argument("Message size is larger than batch reserve size");
-      }
-
       // message + the next size / skip block ready for next message
       auto const allocationSize = messageSizeBytes + sizeof(MessageSize);
 
@@ -93,7 +94,7 @@ namespace arquebus::spsc::var_msg {
     ///
     /// It is the caller's responsibility to ensure that all
     /// allocated message buffer spans have been filled before calling flush().
-    void flush()
+    void flush() noexcept
     {
       // update the shared read index to release all pending messages
       // We are pre-allocating the next size/skip indicator, so we have to release to just before that
@@ -115,7 +116,7 @@ namespace arquebus::spsc::var_msg {
     // continuous sequence of bytes to write the next size or skip into.
     std::uint64_t m_allocatedIndex{ sizeof(MessageSize) };
 
-    void reserve(std::size_t minimumRequired)
+    void reserve(std::size_t minimumRequired) noexcept
     {
       // increase the write index by the BatchMessageReserve and this message size to ensure enough space
       // and then determine if we need to skip the allocation forward to the next index wrap.

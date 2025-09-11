@@ -26,11 +26,16 @@ namespace arquebus::spsc::var_msg {
     using QueueLayout = impl::spsc::variable_message_length_header<Size2NBits, TMessageSize, CacheLineSize>;
 
   public:
+    /// Create a host for the given queue name. The name must match that used by the producer and consumer.
+    ///
+    /// @param name The unique name of the queue to create
     explicit host(std::string_view name)
       : m_queueOwner(name)
     {}
 
-
+    /// Open and create the shared memory queue.
+    ///
+    /// This must occur before the producer or consumer can attempt to connect.
     void create()
     {
       m_queueOwner.create();
@@ -39,10 +44,10 @@ namespace arquebus::spsc::var_msg {
       m_queue->initialise();
     }
 
-    // If the shared memory segment already exists, delete it before creating a new one
-    //
-    // WARNING: existing open mapping will still see old segment, new mappings will see
-    //          new file. Be VERY sure you want to do this!
+    /// If the shared memory segment already exists, delete it before creating a new one
+    ///
+    /// WARNING: existing open mapping will still see old segment, new mappings will see
+    ///          new file. Be VERY sure you want to do this!
     void create(danger_delete_existing_shared_memory_segment_tag /*unused*/)
     {
       m_queueOwner.delete_existing();
