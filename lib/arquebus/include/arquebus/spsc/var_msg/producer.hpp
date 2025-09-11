@@ -58,7 +58,7 @@ namespace arquebus::spsc::var_msg {
     /// Allocate a write buffer for a message of numberBytes in length.
     ///
     /// A messageSizeBytes of zero or greater or equal to BatchMessageReserve is not supported and
-    /// will cause undefined behaviour.
+    /// will cause incorrect behaviour.
     ///
     /// @param messageSizeBytes Message Length
     /// @return a span<> for the caller to fill with message data

@@ -49,7 +49,7 @@ namespace arquebus::spsc::var_msg {
     ///
     /// If the consumer is overrun by the producer, a std::runtime_error will be thrown
     ///
-    /// @return A span containing the next message data
+    /// @return An optional span containing the next message data
     auto read() -> std::optional<std::span<std::uint8_t const>>
     {
       if (m_readIndex < m_cachedReadIndex) [[likely]] {
@@ -82,7 +82,7 @@ namespace arquebus::spsc::var_msg {
       // read the length
       MessageSize messageSize{ 0 };
       auto *pBuffer = &m_queue->data[QueueLayout::BufferSize::to_offset(m_readIndex)];
-      std::memcpy(pBuffer, &messageSize, sizeof(MessageSize));
+      std::memcpy(&messageSize, pBuffer, sizeof(MessageSize));
 
       if (messageSize == 0) [[unlikely]] {
         // The next message would wrap in the queue buffer, so the producer has moved it to the
@@ -95,7 +95,7 @@ namespace arquebus::spsc::var_msg {
 
         // we have wrapped to the beginning
         pBuffer = &m_queue->data[0];
-        std::memcpy(pBuffer, &messageSize, sizeof(MessageSize));
+        std::memcpy(&messageSize, pBuffer, sizeof(MessageSize));
       }
 
       // update our cached read index (including the size data)

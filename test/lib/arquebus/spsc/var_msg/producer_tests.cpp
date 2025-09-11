@@ -53,7 +53,7 @@ namespace {
 
     auto w2 = prod.allocate_write(5);
     CHECK(w2.size() == 5);
-    std::iota(w2.begin(), w2.end(), 1);
+    std::iota(w2.begin(), w2.end(), 10);
     CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType));
     prod.flush();
     CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType) + w2.size() + sizeof(SizeType));
