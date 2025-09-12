@@ -31,7 +31,7 @@ namespace arquebus::impl::spsc {
     // we are using C-style array to avoid initialisation, it will be zero filled when we
     // map it into memory as a shared memory region
     // NOLINTNEXTLINE(*-avoid-c-arrays)
-    alignas(CacheLineSize) std::uint8_t data[BufferSize::Bytes];
+    alignas(CacheLineSize) std::byte data[BufferSize::Bytes];
 
 
     // the owner should initialise the queue
@@ -65,7 +65,7 @@ namespace arquebus::impl::spsc {
       } while (type == queue_type::None);
 
       // owner has initialised
-      if(header.magic_number != common_header::HeaderMagicNumber) {
+      if (header.magic_number != common_header::HeaderMagicNumber) {
         throw std::logic_error("bad magic number for header");
       }
       if (type != QueueType) {

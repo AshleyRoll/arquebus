@@ -7,13 +7,21 @@
 #include "arquebus/spsc/var_msg/producer.hpp"
 
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
-#include <numeric>
+#include <span>
 #include <string_view>
 
 // NOLINTBEGIN(*-magic-numbers, *-identifier-length, *-pointer-arithmetic, *-unused-variable)
 
 namespace {
+
+  void fill_incrementing(std::span<std::byte> buffer, int startAt)
+  {
+    for (auto &b : buffer) {
+      b = static_cast<std::byte>(startAt++);
+    }
+  }
 
   template<std::unsigned_integral TMessageSize>
   void test_can_receive_messages(std::string_view name)
@@ -39,14 +47,19 @@ namespace {
 
     // this will wrap eventually
     for (int i = 0; i < 10; i++) {
+      // write data to the message
       auto w1 = prod.allocate_write(10);
-      std::iota(w1.begin(), w1.end(), i);
+      fill_incrementing(w1, i);
+
+      // should not yet be visible
       auto r1 = cons.read();
       CHECK(not r1.has_value());
       prod.flush();
+
+      // now the message should exist
       r1 = cons.read();
       REQUIRE(r1.has_value());
-      if(r1.has_value()) {  // avoid unchecked optional warning
+      if (r1.has_value()) {  // avoid unchecked optional warning
         CHECK(r1.value().size() == w1.size());
         CHECK_THAT(r1.value(), RangeEquals(w1));
       }

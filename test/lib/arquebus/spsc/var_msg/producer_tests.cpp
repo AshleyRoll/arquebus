@@ -8,15 +8,22 @@
 
 #include <algorithm>
 #include <concepts>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <numeric>
 #include <span>
 #include <string_view>
 
 // NOLINTBEGIN(*-magic-numbers, *-identifier-length, *-pointer-arithmetic, *-unused-variable)
 
 namespace {
+  void fill_incrementing(std::span<std::byte> buffer, int startAt)
+  {
+    for (auto &b : buffer) {
+      b = static_cast<std::byte>(startAt++);
+    }
+  }
+
   template<std::unsigned_integral TMessageSize>
   void test_can_record_messages(std::string_view name)
   {
@@ -45,7 +52,7 @@ namespace {
 
     auto w1 = prod.allocate_write(15);
     CHECK(w1.size() == 15);
-    std::iota(w1.begin(), w1.end(), 1);
+    fill_incrementing(w1, 1);
     CHECK(pQueue->read_index.load() == 0);
     prod.flush();
     CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType));
@@ -53,7 +60,7 @@ namespace {
 
     auto w2 = prod.allocate_write(5);
     CHECK(w2.size() == 5);
-    std::iota(w2.begin(), w2.end(), 10);
+    fill_incrementing(w2, 10);
     CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType));
     prod.flush();
     CHECK(pQueue->read_index.load() == w1.size() + sizeof(SizeType) + w2.size() + sizeof(SizeType));
@@ -66,12 +73,12 @@ namespace {
 
     std::memcpy(&s, &data[0], sizeof(SizeType));
     REQUIRE(s == w1.size());
-    std::span<std::uint8_t const> m1{ &data[sizeof(SizeType)], w1.size() };
+    std::span<std::byte const> m1{ &data[sizeof(SizeType)], w1.size() };
     CHECK_THAT(m1, RangeEquals(w1));
 
     std::memcpy(&s, &data[sizeof(SizeType) + w1.size()], sizeof(SizeType));
     REQUIRE(s == w2.size());
-    std::span<std::uint8_t const> m2{ &data[sizeof(SizeType) + w1.size() + sizeof(SizeType)], w2.size() };
+    std::span<std::byte const> m2{ &data[sizeof(SizeType) + w1.size() + sizeof(SizeType)], w2.size() };
     CHECK_THAT(m2, RangeEquals(w2));
   }
 
@@ -99,7 +106,7 @@ namespace {
     auto *pQueue = obs.mapping();
 
     // fill with junk so we can detect correct "zero" write
-    std::fill(std::begin(pQueue->data), std::end(pQueue->data), 0xA5);
+    std::ranges::fill(pQueue->data, std::byte{ 0xA5 });
 
     auto &data = obs.mapping()->data;
     SizeType s{};

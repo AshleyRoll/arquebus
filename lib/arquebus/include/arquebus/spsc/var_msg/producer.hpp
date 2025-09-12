@@ -62,7 +62,7 @@ namespace arquebus::spsc::var_msg {
     ///
     /// @param messageSizeBytes Message Length
     /// @return a span<> for the caller to fill with message data
-    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) noexcept -> std::span<std::uint8_t>
+    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) noexcept -> std::span<std::byte>
     {
       // message + the next size / skip block ready for next message
       auto const allocationSize = messageSizeBytes + sizeof(MessageSize);

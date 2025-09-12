@@ -50,7 +50,7 @@ namespace arquebus::spsc::var_msg {
     /// If the consumer is overrun by the producer, a std::runtime_error will be thrown
     ///
     /// @return An optional span containing the next message data
-    auto read() -> std::optional<std::span<std::uint8_t const>>
+    auto read() -> std::optional<std::span<std::byte const>>
     {
       if (m_readIndex < m_cachedReadIndex) [[likely]] {
         return decode_message();
@@ -77,7 +77,7 @@ namespace arquebus::spsc::var_msg {
     // We can assume that the message will never wrap around the queue buffer as the writer
     // takes care of that. We need to decode the zero length messages and wrap ourselves correctly
     // to match.
-    auto decode_message() noexcept -> std::span<std::uint8_t const>
+    auto decode_message() noexcept -> std::span<std::byte const>
     {
       // read the length
       MessageSize messageSize{ 0 };
