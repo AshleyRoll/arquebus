@@ -40,6 +40,12 @@ namespace arquebus::spsc::var_msg {
 
       m_queue = m_queueUser.mapping();
       m_queue->wait_and_validate();
+
+      // find the current read-released location and remember them - this allows a consumer to access
+      // and already started queue
+      m_cachedWriteIndex = m_queue->write_index.load(std::memory_order_acquire);
+      m_cachedReadIndex = m_queue->read_index.load(std::memory_order_acquire);
+      m_readIndex = m_cachedReadIndex;
     }
 
     /// Read the next message from the queue.

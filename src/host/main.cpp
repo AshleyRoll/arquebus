@@ -21,7 +21,7 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
     fmt::println("creating queue...");
     arquebus::spsc::var_msg::host<QueueSizeBits> queue{ "spsc1" };
     fmt::println("initialising queue...");
-    queue.create();
+    queue.create(arquebus::spsc::var_msg::danger_delete_existing_shared_memory_segment_tag{});
 
     fmt::println("..done");
     fmt::println("Press Enter to quit");

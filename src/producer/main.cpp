@@ -1,11 +1,18 @@
 #include <arquebus/spsc/var_msg/producer.hpp>
 #include <arquebus/version.hpp>
 
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
+#include <cstddef>
 #include <exception>
+
 #include <fmt/core.h>
 
 static constexpr auto QueueSizeBits = 23u;
 static constexpr auto QueueMessageReservationSize = 100'000u;
+
+static constexpr auto NumMessages = 10'000'000;
 
 auto main(int /*argc*/, char const * /*argv*/[]) -> int
 {
@@ -19,7 +26,32 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
     fmt::println("attaching queue...");
     queue.attach();
 
+    std::uint64_t totalSize{ 0 };
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (std::uint64_t i = 0; i < NumMessages; ++i) {
+      std::uint32_t const size = (i & 0x0Fu) + 2;
+      auto message = queue.allocate_write(size);
+      // emulate writing message data
+      std::ranges::fill(message, std::byte{ 1 });
+      totalSize += size;
+      queue.flush();
+    }
+
+    // send the "end" 1 byte message
+    auto message = queue.allocate_write(1);
+    std::ranges::fill(message, std::byte{ 1 });
+    totalSize += 1;
+    queue.flush();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
     fmt::println("..done");
+    fmt::println("duration: {}ms", elapsed.count());
+    fmt::println("total size: {}", totalSize);
+
     fmt::println("Press Enter to quit");
 
     getchar();  // NOLINT
