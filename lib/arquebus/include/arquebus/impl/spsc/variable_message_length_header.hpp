@@ -19,6 +19,7 @@ namespace arquebus::impl::spsc {
   {
     using MessageSize = TMessageSize;
     using BufferSize = buffer_size<Size2NBits>;
+    using StorageType = std::byte;
 
     static constexpr auto QueueType = queue_type::SingleProducerSingleConsumerVariableMessageLength;
 
@@ -31,7 +32,7 @@ namespace arquebus::impl::spsc {
     // we are using C-style array to avoid initialisation, it will be zero filled when we
     // map it into memory as a shared memory region
     // NOLINTNEXTLINE(*-avoid-c-arrays)
-    alignas(CacheLineSize) std::byte data[BufferSize::Bytes];
+    alignas(CacheLineSize) StorageType data[BufferSize::Bytes];
 
 
     // the owner should initialise the queue

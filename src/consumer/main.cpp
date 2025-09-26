@@ -31,10 +31,14 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
     auto start = std::chrono::high_resolution_clock::now();
 
     bool done{ false };
+
     while (not done) {
       auto message = queue.read();
       if (message.has_value()) {
         numMessages += 1;
+
+        fmt::print("."); if(numMessages % 100 == 0) { fmt::print("\n"); }  // NOLINT
+
         totalSize += message.value().size();
         // emulate reading message data
         sum = std::ranges::fold_left(message.value(), sum, [](std::uint64_t acc, std::byte val) {
@@ -48,7 +52,7 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
     auto end = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    fmt::println("..done");
+    fmt::println("\n..done");
     fmt::println("duration: {}ms", elapsed.count());
     fmt::println("total size: {}", totalSize);
     fmt::println("total sum: {}", sum);

@@ -29,6 +29,8 @@ namespace arquebus::spsc::var_msg {
   public:
     using QueueLayout = impl::spsc::variable_message_length_header<Size2NBits, TMessageSize, CacheLineSize>;
     using MessageSize = TMessageSize;
+    using StorageType = QueueLayout::StorageType;
+
     static constexpr auto BatchMessageReserve = std::uint64_t{ NBytesBatchMessageReserve };
 
     static_assert(
@@ -62,7 +64,7 @@ namespace arquebus::spsc::var_msg {
     ///
     /// @param messageSizeBytes Message Length
     /// @return a span<> for the caller to fill with message data
-    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) noexcept -> std::span<std::byte>
+    [[nodiscard]] auto allocate_write(MessageSize messageSizeBytes) noexcept -> std::span<StorageType>
     {
       // message + the next size / skip block ready for next message
       auto const allocationSize = messageSizeBytes + sizeof(MessageSize);

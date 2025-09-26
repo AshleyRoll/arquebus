@@ -22,6 +22,7 @@ namespace arquebus::spsc::var_msg {
   class consumer
   {
     using QueueLayout = impl::spsc::variable_message_length_header<Size2NBits, TMessageSize, CacheLineSize>;
+    using StorageType = QueueLayout::StorageType;
     using MessageSize = TMessageSize;
 
   public:
@@ -43,8 +44,8 @@ namespace arquebus::spsc::var_msg {
 
       // find the current read-released location and remember them - this allows a consumer to access
       // and already started queue
-      m_cachedWriteIndex = m_queue->write_index.load(std::memory_order_acquire);
       m_cachedReadIndex = m_queue->read_index.load(std::memory_order_acquire);
+      m_cachedWriteIndex = m_queue->write_index.load(std::memory_order_acquire);
       m_readIndex = m_cachedReadIndex;
     }
 
@@ -56,7 +57,7 @@ namespace arquebus::spsc::var_msg {
     /// If the consumer is overrun by the producer, a std::runtime_error will be thrown
     ///
     /// @return An optional span containing the next message data
-    auto read() -> std::optional<std::span<std::byte const>>
+    auto read() -> std::optional<std::span<StorageType const>>
     {
       if (m_readIndex < m_cachedReadIndex) [[likely]] {
         return decode_message();
@@ -83,7 +84,7 @@ namespace arquebus::spsc::var_msg {
     // We can assume that the message will never wrap around the queue buffer as the writer
     // takes care of that. We need to decode the zero length messages and wrap ourselves correctly
     // to match.
-    auto decode_message() noexcept -> std::span<std::byte const>
+    auto decode_message() noexcept -> std::span<StorageType const>
     {
       // read the length
       MessageSize messageSize{ 0 };

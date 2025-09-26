@@ -3,16 +3,18 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <exception>
+//#include <thread>
 
 #include <fmt/core.h>
 
 static constexpr auto QueueSizeBits = 23u;
-static constexpr auto QueueMessageReservationSize = 100'000u;
+static constexpr auto QueueMessageReservationSize = 1'024u;
 
-static constexpr auto NumMessages = 10'000'000;
+static constexpr auto NumMessages = 10'000;  //'000;
+//static constexpr auto Delay = std::chrono::milliseconds{ 10 };
 
 auto main(int /*argc*/, char const * /*argv*/[]) -> int
 {
@@ -37,6 +39,8 @@ auto main(int /*argc*/, char const * /*argv*/[]) -> int
       std::ranges::fill(message, std::byte{ 1 });
       totalSize += size;
       queue.flush();
+      fmt::print("."); if(i % 100 == 0) { fmt::print("\n"); }  // NOLINT
+      //std::this_thread::sleep_for(Delay);
     }
 
     // send the "end" 1 byte message
